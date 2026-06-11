@@ -11,12 +11,14 @@ export default function Dashboard() {
     const [accounts, setAccounts] = useState([]);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [showModal, setShowModal] = useState(null); // "deposit" | "withdraw" | "createAccount" | "transfer"
+    const [showModal, setShowModal] = useState(null);
     const [selectedAccount, setSelectedAccount] = useState(null);
     const [amount, setAmount] = useState("");
     const [description, setDescription] = useState("");
     const [accountType, setAccountType] = useState("SAVINGS");
     const [actionMsg, setActionMsg] = useState(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
 
     // Transfer state
     const [transferFrom, setTransferFrom] = useState("");
@@ -28,6 +30,12 @@ export default function Dashboard() {
     useEffect(() => {
         document.documentElement.setAttribute("data-theme", darkMode ? "dark" : "light");
     }, [darkMode]);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         fetchAccounts();
@@ -183,44 +191,49 @@ export default function Dashboard() {
         border: `1px solid ${border}`,
         background: surfaceAlt,
         color: text,
-        fontSize: 14,
+        fontSize: isMobile ? 13 : 14,
         outline: "none",
         boxSizing: "border-box",
         marginTop: 4,
     };
+
     const labelStyle = {
-        fontSize: 13,
+        fontSize: isMobile ? 12 : 13,
         color: textMuted,
         display: "block",
         marginBottom: 2,
     };
+
     const btnPrimary = {
         background: blue,
         color: "#fff",
         border: "none",
         borderRadius: 8,
-        padding: "10px 20px",
+        padding: isMobile ? "12px 16px" : "10px 20px",
         fontWeight: 500,
-        fontSize: 14,
+        fontSize: isMobile ? 13 : 14,
         cursor: "pointer",
         width: "100%",
+        minHeight: isMobile ? 44 : "auto",
     };
+
     const btnSecondary = {
         background: "transparent",
         color: textMuted,
         border: `1px solid ${border}`,
         borderRadius: 8,
-        padding: "10px 20px",
-        fontSize: 14,
+        padding: isMobile ? "12px 16px" : "10px 20px",
+        fontSize: isMobile ? 13 : 14,
         cursor: "pointer",
         width: "100%",
+        minHeight: isMobile ? 44 : "auto",
     };
 
     // ─── render helpers ────────────────────────────────────────────────────────
     const StatCard = ({ label, value, bg: sbg, col }) => (
-        <div style={{ background: sbg, borderRadius: 12, padding: "14px 16px" }}>
-            <div style={{ fontSize: 12, color: col, marginBottom: 4 }}>{label}</div>
-            <div style={{ fontSize: 20, fontWeight: 500, color: col }}>
+        <div style={{ background: sbg, borderRadius: 12, padding: isMobile ? "12px 14px" : "14px 16px" }}>
+            <div style={{ fontSize: isMobile ? 11 : 12, color: col, marginBottom: 4 }}>{label}</div>
+            <div style={{ fontSize: isMobile ? 18 : 20, fontWeight: 500, color: col }}>
                 ₹{value.toLocaleString("en-IN")}
             </div>
         </div>
@@ -233,7 +246,7 @@ export default function Dashboard() {
                 inset: 0,
                 background: "rgba(0,0,0,0.5)",
                 display: "flex",
-                alignItems: "center",
+                alignItems: "flex-end",
                 justifyContent: "center",
                 zIndex: 100,
             }}
@@ -241,10 +254,13 @@ export default function Dashboard() {
             <div
                 style={{
                     background: surface,
-                    borderRadius: 16,
-                    padding: 24,
-                    width: 360,
-                    border: `1px solid ${border}`,
+                    borderRadius: isMobile ? "20px 20px 0 0" : 16,
+                    padding: isMobile ? 20 : 24,
+                    width: "100%",
+                    maxWidth: isMobile ? "100%" : 360,
+                    border: isMobile ? "none" : `1px solid ${border}`,
+                    maxHeight: isMobile ? "85vh" : "auto",
+                    overflowY: "auto",
                 }}
             >
                 <div
@@ -255,7 +271,7 @@ export default function Dashboard() {
                         marginBottom: 20,
                     }}
                 >
-                    <span style={{ fontWeight: 500, fontSize: 16, color: text }}>
+                    <span style={{ fontWeight: 500, fontSize: isMobile ? 15 : 16, color: text }}>
                         {title}
                     </span>
                     <button
@@ -265,7 +281,7 @@ export default function Dashboard() {
                             border: "none",
                             cursor: "pointer",
                             color: textMuted,
-                            fontSize: 20,
+                            fontSize: 24,
                         }}
                     >
                         ×
@@ -289,8 +305,14 @@ export default function Dashboard() {
 
     // ─── pages ─────────────────────────────────────────────────────────────────
     const renderDashboard = () => (
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 12 : 16 }}>
+            <div
+                style={{
+                    display: "grid",
+                    gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr 1fr",
+                    gap: isMobile ? 10 : 12,
+                }}
+            >
                 <StatCard
                     label="Total Balance"
                     value={totalBalance}
@@ -315,8 +337,8 @@ export default function Dashboard() {
             <div
                 style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fit,minmax(200px,1fr))",
-                    gap: 12,
+                    gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fit,minmax(200px,1fr))",
+                    gap: isMobile ? 10 : 12,
                 }}
             >
                 {accounts.map((acc) => (
@@ -326,17 +348,17 @@ export default function Dashboard() {
                             background: surface,
                             border: `1px solid ${border}`,
                             borderRadius: 12,
-                            padding: 16,
+                            padding: isMobile ? 14 : 16,
                         }}
                     >
-                        <div style={{ fontSize: 12, color: textMuted, marginBottom: 4 }}>
+                        <div style={{ fontSize: isMobile ? 11 : 12, color: textMuted, marginBottom: 4 }}>
                             {acc.accountType} Account
                         </div>
-                        <div style={{ fontSize: 22, fontWeight: 500, color: text }}>
+                        <div style={{ fontSize: isMobile ? 20 : 22, fontWeight: 500, color: text }}>
                             ₹{acc.balance.toLocaleString("en-IN")}
                         </div>
                         <div
-                            style={{ fontSize: 11, color: textMuted, marginTop: 2, marginBottom: 12 }}
+                            style={{ fontSize: 10, color: textMuted, marginTop: 2, marginBottom: 12 }}
                         >
                             {acc.accountNumber}
                         </div>
@@ -348,13 +370,14 @@ export default function Dashboard() {
                                 }}
                                 style={{
                                     flex: 1,
-                                    fontSize: 12,
-                                    padding: "6px 0",
+                                    fontSize: isMobile ? 12 : 12,
+                                    padding: isMobile ? "8px 0" : "6px 0",
                                     borderRadius: 8,
                                     border: "none",
                                     background: blueBg,
                                     color: blueText,
                                     cursor: "pointer",
+                                    minHeight: isMobile ? 40 : "auto",
                                 }}
                             >
                                 Deposit
@@ -366,13 +389,14 @@ export default function Dashboard() {
                                 }}
                                 style={{
                                     flex: 1,
-                                    fontSize: 12,
-                                    padding: "6px 0",
+                                    fontSize: isMobile ? 12 : 12,
+                                    padding: isMobile ? "8px 0" : "6px 0",
                                     borderRadius: 8,
                                     border: "none",
                                     background: redBg,
                                     color: redText,
                                     cursor: "pointer",
+                                    minHeight: isMobile ? 40 : "auto",
                                 }}
                             >
                                 Withdraw
@@ -387,21 +411,21 @@ export default function Dashboard() {
                         background: surfaceAlt,
                         border: `1.5px dashed ${border}`,
                         borderRadius: 12,
-                        padding: 16,
+                        padding: isMobile ? 14 : 16,
                         display: "flex",
                         flexDirection: "column",
                         alignItems: "center",
                         justifyContent: "center",
                         cursor: "pointer",
-                        minHeight: 130,
+                        minHeight: isMobile ? 110 : 130,
                     }}
                 >
                     <i
                         className="ti ti-plus"
-                        style={{ fontSize: 28, color: textMuted }}
+                        style={{ fontSize: isMobile ? 24 : 28, color: textMuted }}
                         aria-hidden="true"
                     ></i>
-                    <span style={{ fontSize: 13, color: textMuted, marginTop: 8 }}>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: textMuted, marginTop: 8 }}>
                         New Account
                     </span>
                 </div>
@@ -413,17 +437,17 @@ export default function Dashboard() {
                     background: surface,
                     border: `1px solid ${border}`,
                     borderRadius: 12,
-                    padding: 16,
+                    padding: isMobile ? 14 : 16,
                 }}
             >
-                <div style={{ fontSize: 14, fontWeight: 500, color: text, marginBottom: 12 }}>
+                <div style={{ fontSize: isMobile ? 13 : 14, fontWeight: 500, color: text, marginBottom: 12 }}>
                     Recent Transactions
                 </div>
                 {transactions.length === 0 && (
                     <div
                         style={{
                             color: textMuted,
-                            fontSize: 13,
+                            fontSize: isMobile ? 12 : 13,
                             textAlign: "center",
                             padding: "20px 0",
                         }}
@@ -440,17 +464,18 @@ export default function Dashboard() {
                             alignItems: "center",
                             padding: "10px 0",
                             borderBottom: `1px solid ${border}`,
+                            fontSize: isMobile ? 12 : 13,
                         }}
                     >
                         <div>
-                            <div style={{ fontSize: 13, color: text }}>{t.description}</div>
-                            <div style={{ fontSize: 11, color: textMuted }}>
+                            <div style={{ color: text }}>{t.description}</div>
+                            <div style={{ fontSize: isMobile ? 10 : 11, color: textMuted }}>
                                 {new Date(t.createdAt).toLocaleDateString("en-IN")}
                             </div>
                         </div>
                         <span
                             style={{
-                                fontSize: 12,
+                                fontSize: isMobile ? 11 : 12,
                                 padding: "3px 10px",
                                 borderRadius: 20,
                                 background:
@@ -473,8 +498,8 @@ export default function Dashboard() {
     );
 
     const renderAccounts = () => (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            <div style={{ fontSize: 16, fontWeight: 500, color: text }}>All Accounts</div>
+        <div style={{ display: "flex", flexDirection: "column", gap: isMobile ? 10 : 12 }}>
+            <div style={{ fontSize: isMobile ? 15 : 16, fontWeight: 500, color: text }}>All Accounts</div>
             {accounts.map((acc) => (
                 <div
                     key={acc.id}
@@ -482,37 +507,41 @@ export default function Dashboard() {
                         background: surface,
                         border: `1px solid ${border}`,
                         borderRadius: 12,
-                        padding: 20,
+                        padding: isMobile ? 14 : 20,
                         display: "flex",
+                        flexDirection: isMobile ? "column" : "row",
                         justifyContent: "space-between",
-                        alignItems: "center",
+                        alignItems: isMobile ? "flex-start" : "center",
+                        gap: isMobile ? 12 : 0,
                     }}
                 >
                     <div>
-                        <div style={{ fontSize: 13, color: textMuted }}>
+                        <div style={{ fontSize: isMobile ? 12 : 13, color: textMuted }}>
                             {acc.accountType} Account
                         </div>
-                        <div style={{ fontSize: 24, fontWeight: 500, color: text }}>
+                        <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 500, color: text }}>
                             ₹{acc.balance.toLocaleString("en-IN")}
                         </div>
-                        <div style={{ fontSize: 12, color: textMuted, marginTop: 2 }}>
+                        <div style={{ fontSize: isMobile ? 11 : 12, color: textMuted, marginTop: 2 }}>
                             {acc.accountNumber}
                         </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ display: "flex", gap: 8, width: isMobile ? "100%" : "auto" }}>
                         <button
                             onClick={() => {
                                 setSelectedAccount(acc);
                                 setShowModal("deposit");
                             }}
                             style={{
-                                fontSize: 13,
-                                padding: "8px 16px",
+                                flex: isMobile ? 1 : "auto",
+                                fontSize: isMobile ? 12 : 13,
+                                padding: isMobile ? "10px 14px" : "8px 16px",
                                 borderRadius: 8,
                                 border: "none",
                                 background: blueBg,
                                 color: blueText,
                                 cursor: "pointer",
+                                minHeight: isMobile ? 40 : "auto",
                             }}
                         >
                             Deposit
@@ -523,13 +552,15 @@ export default function Dashboard() {
                                 setShowModal("withdraw");
                             }}
                             style={{
-                                fontSize: 13,
-                                padding: "8px 16px",
+                                flex: isMobile ? 1 : "auto",
+                                fontSize: isMobile ? 12 : 13,
+                                padding: isMobile ? "10px 14px" : "8px 16px",
                                 borderRadius: 8,
                                 border: "none",
                                 background: redBg,
                                 color: redText,
                                 cursor: "pointer",
+                                minHeight: isMobile ? 40 : "auto",
                             }}
                         >
                             Withdraw
@@ -547,8 +578,8 @@ export default function Dashboard() {
     );
 
     const renderTransfer = () => (
-        <div style={{ maxWidth: 460 }}>
-            <div style={{ fontSize: 16, fontWeight: 500, color: text, marginBottom: 16 }}>
+        <div style={{ maxWidth: isMobile ? "100%" : 460 }}>
+            <div style={{ fontSize: isMobile ? 15 : 16, fontWeight: 500, color: text, marginBottom: 16 }}>
                 Transfer Money
             </div>
             <div
@@ -556,7 +587,7 @@ export default function Dashboard() {
                     background: surface,
                     border: `1px solid ${border}`,
                     borderRadius: 12,
-                    padding: 24,
+                    padding: isMobile ? 16 : 24,
                     display: "flex",
                     flexDirection: "column",
                     gap: 16,
@@ -568,7 +599,7 @@ export default function Dashboard() {
                     <select
                         value={transferFrom}
                         onChange={(e) => setTransferFrom(e.target.value)}
-                        style={inputStyle}
+                        style={{ ...inputStyle, minHeight: isMobile ? 44 : "auto" }}
                     >
                         <option value="">Select account</option>
                         {accounts.map((acc) => (
@@ -588,7 +619,7 @@ export default function Dashboard() {
                         value={transferTo}
                         onChange={(e) => setTransferTo(e.target.value)}
                         placeholder="e.g. ACC100234"
-                        style={inputStyle}
+                        style={{ ...inputStyle, minHeight: isMobile ? 44 : "auto" }}
                     />
                 </div>
 
@@ -600,7 +631,7 @@ export default function Dashboard() {
                         value={transferAmount}
                         onChange={(e) => setTransferAmount(e.target.value)}
                         placeholder="Enter amount"
-                        style={inputStyle}
+                        style={{ ...inputStyle, minHeight: isMobile ? 44 : "auto" }}
                     />
                 </div>
 
@@ -612,15 +643,15 @@ export default function Dashboard() {
                         value={transferDesc}
                         onChange={(e) => setTransferDesc(e.target.value)}
                         placeholder="e.g. Rent payment"
-                        style={inputStyle}
+                        style={{ ...inputStyle, minHeight: isMobile ? 44 : "auto" }}
                     />
                 </div>
 
                 {/* Summary box */}
                 {transferFrom && transferAmount && (
                     <div style={{ background: blueBg, borderRadius: 8, padding: "12px 16px" }}>
-                        <div style={{ fontSize: 12, color: blueText }}>Transfer Summary</div>
-                        <div style={{ fontSize: 13, color: blueText, marginTop: 4 }}>
+                        <div style={{ fontSize: isMobile ? 11 : 12, color: blueText }}>Transfer Summary</div>
+                        <div style={{ fontSize: isMobile ? 12 : 13, color: blueText, marginTop: 4 }}>
                             Sending <strong>₹{parseFloat(transferAmount || 0).toLocaleString("en-IN")}</strong> to{" "}
                             <strong>{transferTo || "..."}</strong>
                         </div>
@@ -644,17 +675,17 @@ export default function Dashboard() {
                 background: surface,
                 border: `1px solid ${border}`,
                 borderRadius: 12,
-                padding: 16,
+                padding: isMobile ? 14 : 16,
             }}
         >
-            <div style={{ fontSize: 16, fontWeight: 500, color: text, marginBottom: 12 }}>
+            <div style={{ fontSize: isMobile ? 15 : 16, fontWeight: 500, color: text, marginBottom: 12 }}>
                 Transaction History
             </div>
             {transactions.length === 0 && (
                 <div
                     style={{
                         color: textMuted,
-                        fontSize: 13,
+                        fontSize: isMobile ? 12 : 13,
                         textAlign: "center",
                         padding: "30px 0",
                     }}
@@ -671,17 +702,19 @@ export default function Dashboard() {
                         alignItems: "center",
                         padding: "12px 0",
                         borderBottom: `1px solid ${border}`,
+                        gap: isMobile ? 10 : 0,
                     }}
                 >
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 10 : 12, flex: 1 }}>
                         <div
                             style={{
-                                width: 36,
-                                height: 36,
+                                width: isMobile ? 32 : 36,
+                                height: isMobile ? 32 : 36,
                                 borderRadius: "50%",
                                 display: "flex",
                                 alignItems: "center",
                                 justifyContent: "center",
+                                flexShrink: 0,
                                 background:
                                     t.type === "DEPOSIT" || t.type === "TRANSFER_IN"
                                         ? greenBg
@@ -695,7 +728,7 @@ export default function Dashboard() {
                                         : "ti ti-circle-arrow-up"
                                 }
                                 style={{
-                                    fontSize: 18,
+                                    fontSize: isMobile ? 16 : 18,
                                     color:
                                         t.type === "DEPOSIT" || t.type === "TRANSFER_IN"
                                             ? greenText
@@ -704,17 +737,19 @@ export default function Dashboard() {
                                 aria-hidden="true"
                             ></i>
                         </div>
-                        <div>
-                            <div style={{ fontSize: 13, color: text }}>{t.description}</div>
-                            <div style={{ fontSize: 11, color: textMuted }}>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: isMobile ? 12 : 13, color: text, wordBreak: "break-word" }}>
+                                {t.description}
+                            </div>
+                            <div style={{ fontSize: isMobile ? 10 : 11, color: textMuted }}>
                                 {new Date(t.createdAt).toLocaleString("en-IN")}
                             </div>
                         </div>
                     </div>
-                    <div style={{ textAlign: "right" }}>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
                         <div
                             style={{
-                                fontSize: 14,
+                                fontSize: isMobile ? 13 : 14,
                                 fontWeight: 500,
                                 color:
                                     t.type === "DEPOSIT" || t.type === "TRANSFER_IN"
@@ -725,7 +760,7 @@ export default function Dashboard() {
                             {t.type === "DEPOSIT" || t.type === "TRANSFER_IN" ? "+" : "-"}
                             ₹{t.amount.toLocaleString("en-IN")}
                         </div>
-                        <div style={{ fontSize: 11, color: textMuted }}>
+                        <div style={{ fontSize: isMobile ? 10 : 11, color: textMuted }}>
                             Bal: ₹{t.balanceAfter?.toLocaleString("en-IN")}
                         </div>
                     </div>
@@ -740,32 +775,33 @@ export default function Dashboard() {
                 background: surface,
                 border: `1px solid ${border}`,
                 borderRadius: 12,
-                padding: 24,
-                maxWidth: 420,
+                padding: isMobile ? 16 : 24,
+                maxWidth: isMobile ? "100%" : 420,
             }}
         >
-            <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 24 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: isMobile ? 12 : 16, marginBottom: 24 }}>
                 <div
                     style={{
-                        width: 56,
-                        height: 56,
+                        width: isMobile ? 48 : 56,
+                        height: isMobile ? 48 : 56,
                         borderRadius: "50%",
                         background: blueBg,
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                        fontSize: 22,
+                        fontSize: isMobile ? 20 : 22,
                         fontWeight: 500,
                         color: blueText,
+                        flexShrink: 0,
                     }}
                 >
                     {user?.fullName?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div>
-                    <div style={{ fontSize: 16, fontWeight: 500, color: text }}>
+                    <div style={{ fontSize: isMobile ? 15 : 16, fontWeight: 500, color: text }}>
                         {user?.fullName || "User"}
                     </div>
-                    <div style={{ fontSize: 13, color: textMuted }}>{user?.email}</div>
+                    <div style={{ fontSize: isMobile ? 12 : 13, color: textMuted }}>{user?.email}</div>
                 </div>
             </div>
             <div
@@ -778,20 +814,20 @@ export default function Dashboard() {
                 }}
             >
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: textMuted }}>Total Accounts</span>
-                    <span style={{ fontSize: 13, color: text, fontWeight: 500 }}>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: textMuted }}>Total Accounts</span>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: text, fontWeight: 500 }}>
                         {accounts.length}
                     </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: textMuted }}>Total Transactions</span>
-                    <span style={{ fontSize: 13, color: text, fontWeight: 500 }}>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: textMuted }}>Total Transactions</span>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: text, fontWeight: 500 }}>
                         {transactions.length}
                     </span>
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ fontSize: 13, color: textMuted }}>Net Balance</span>
-                    <span style={{ fontSize: 13, color: blueText, fontWeight: 500 }}>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: textMuted }}>Net Balance</span>
+                    <span style={{ fontSize: isMobile ? 12 : 13, color: blueText, fontWeight: 500 }}>
                         ₹{totalBalance.toLocaleString("en-IN")}
                     </span>
                 </div>
@@ -826,6 +862,7 @@ export default function Dashboard() {
                 minHeight: "100vh",
                 background: bg,
                 fontFamily: "system-ui, sans-serif",
+                position: "relative"
             }}
         >
             {/* Toast */}
@@ -833,16 +870,17 @@ export default function Dashboard() {
                 <div
                     style={{
                         position: "fixed",
-                        top: 20,
-                        right: 20,
+                        top: isMobile ? 10 : 20,
+                        right: isMobile ? 10 : 20,
                         zIndex: 200,
                         background: actionMsg.ok ? greenBg : redBg,
                         color: actionMsg.ok ? greenText : redText,
-                        padding: "12px 20px",
+                        padding: isMobile ? "10px 16px" : "12px 20px",
                         borderRadius: 10,
-                        fontSize: 14,
+                        fontSize: isMobile ? 12 : 14,
                         fontWeight: 500,
                         border: `1px solid ${actionMsg.ok ? greenText : redText}`,
+                        maxWidth: isMobile ? "calc(100% - 20px)" : "auto",
                     }}
                 >
                     {actionMsg.msg}
@@ -850,120 +888,234 @@ export default function Dashboard() {
             )}
 
             {/* Top Navbar */}
+            {/* Top Navbar */}
             <div
                 style={{
                     background: surface,
                     borderBottom: `1px solid ${border}`,
-                    padding: "0 24px",
-                    height: 56,
+                    padding: isMobile ? "10px 12px" : "0 24px",
+                    minHeight: isMobile ? 52 : 56,
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "space-between",
                     position: "sticky",
                     top: 0,
                     zIndex: 50,
+                    gap: 8,
                 }}
             >
-                <span style={{ fontSize: 18, fontWeight: 500, color: blue }}>
+                {isMobile && (
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            color: text,
+                            fontSize: 22,
+                            padding: "6px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minWidth: 40,
+                            minHeight: 40,
+                        }}
+                    >
+                        ☰
+                    </button>
+                )}
+
+                <span
+                    style={{
+                        fontSize: isMobile ? 16 : 18,
+                        fontWeight: 500,
+                        color: blue,
+                        flex: 1,
+                        textAlign: isMobile ? "center" : "left",
+                    }}
+                >
                     🏦 BankApp
                 </span>
-                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+
+                {!isMobile && (
                     <span style={{ fontSize: 13, color: textMuted }}>
                         Welcome, {user?.fullName || "User"} 👋
                     </span>
-                    {/* Dark mode toggle */}
+                )}
+
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button
                         onClick={() => setDarkMode(!darkMode)}
                         style={{
                             background: surfaceAlt,
                             border: `1px solid ${border}`,
                             borderRadius: 20,
-                            padding: "5px 14px",
+                            padding: isMobile ? "6px 10px" : "5px 14px",
                             cursor: "pointer",
-                            fontSize: 13,
+                            fontSize: isMobile ? 12 : 13,
                             color: text,
                             display: "flex",
                             alignItems: "center",
-                            gap: 6,
+                            justifyContent: "center",
+                            gap: 4,
+                            minHeight: 40,
+                            minWidth: 40,
                         }}
                     >
-                        <i
-                            className={darkMode ? "ti ti-sun" : "ti ti-moon"}
-                            style={{ fontSize: 15 }}
-                            aria-hidden="true"
-                        ></i>
-                        {darkMode ? "Light" : "Dark"}
+                        <span style={{ fontSize: 16 }}>
+                            {darkMode ? "☀️" : "🌙"}
+                        </span>
+                        {!isMobile && (
+                            <span>
+                                {darkMode ? "Light" : "Dark"}
+                            </span>
+                        )}
                     </button>
-                    <button
-                        onClick={handleLogout}
-                        style={{
-                            background: redBg,
-                            color: redText,
-                            border: "none",
-                            borderRadius: 8,
-                            padding: "6px 14px",
-                            fontSize: 13,
-                            cursor: "pointer",
-                        }}
-                    >
-                        Logout
-                    </button>
+
+
+                    {!isMobile && (
+                        <button
+                            onClick={handleLogout}
+                            style={{
+                                background: redBg,
+                                color: redText,
+                                border: "none",
+                                borderRadius: 8,
+                                padding: "6px 14px",
+                                fontSize: 13,
+                                cursor: "pointer",
+                                minHeight: 40,
+                            }}
+                        >
+                            Logout
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Body */}
             <div
                 style={{
-                    display: "grid",
-                    gridTemplateColumns: "80px 1fr",
-                    minHeight: "calc(100vh - 56px)",
+                    display: isMobile ? "block" : "grid",
+                    gridTemplateColumns: isMobile ? undefined : "80px 1fr",
+                    minHeight: `calc(100vh - ${isMobile ? 52 : 56}px)`,
                 }}
             >
-                {/* Sidebar */}
-                <div
-                    style={{
-                        background: surface,
-                        borderRight: `1px solid ${border}`,
-                        padding: "16px 6px",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: 4,
-                        position: "sticky",
-                        top: 56,
-                        height: "calc(100vh - 56px)",
-                    }}
-                >
-                    {navItems.map((item) => (
-                        <button
-                            key={item.id}
-                            onClick={() => setActivePage(item.id)}
-                            style={{
-                                background: activePage === item.id ? sidebarActive : "transparent",
-                                color: activePage === item.id ? sidebarActiveText : textMuted,
-                                border: "none",
-                                borderRadius: 8,
-                                padding: "10px 4px",
-                                cursor: "pointer",
-                                display: "flex",
-                                flexDirection: "column",
-                                alignItems: "center",
-                                gap: 4,
-                                fontSize: 10,
-                                width: "100%",
-                            }}
-                        >
-                            <i
-                                className={`ti ${item.icon}`}
-                                style={{ fontSize: 20 }}
-                                aria-hidden="true"
-                            ></i>
-                            {item.label}
-                        </button>
-                    ))}
-                </div>
+                {/* Sidebar — Mobile */}
+                {isMobile && sidebarOpen && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: 52,
+                            left: 0,
+                            width: "70vw",
+                            maxWidth: 200,
+                            background: surface,
+                            border: `1px solid ${border}`,
+                            borderTop: "none",
+                            padding: "12px 6px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                            zIndex: 40,
+                        }}
+                    >
+                        {navItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    setActivePage(item.id);
+                                    setSidebarOpen(false);
+                                }}
+                                style={{
+                                    background: activePage === item.id ? sidebarActive : "transparent",
+                                    color: activePage === item.id ? sidebarActiveText : textMuted,
+                                    border: "none",
+                                    borderRadius: 8,
+                                    padding: "10px 12px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                    fontSize: 13,
+                                    width: "100%",
+                                    textAlign: "left",
+                                }}
+                            >
+                                <i className={`ti ${item.icon}`} style={{ fontSize: 18 }} aria-hidden="true"></i>
+                                {item.label}
+                            </button>
+                        ))}
+                        <div style={{ borderTop: `1px solid ${border}`, marginTop: 8, paddingTop: 8 }}>
+                            <button
+                                onClick={handleLogout}
+                                style={{
+                                    background: redBg,
+                                    color: redText,
+                                    border: "none",
+                                    borderRadius: 8,
+                                    padding: "10px 12px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                    fontSize: 13,
+                                    width: "100%",
+                                    textAlign: "left",
+                                }}
+                            >
+                                <i className="ti ti-logout" style={{ fontSize: 18 }} aria-hidden="true"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Sidebar — Desktop */}
+                {!isMobile && (
+                    <div
+                        style={{
+                            background: surface,
+                            borderRight: `1px solid ${border}`,
+                            padding: "16px 6px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4,
+                            position: "sticky",
+                            top: 56,
+                            height: `calc(100vh - 56px)`,
+                        }}
+                    >
+                        {navItems.map((item) => (
+                            <button
+                                key={item.id}
+                                onClick={() => setActivePage(item.id)}
+                                style={{
+                                    background: activePage === item.id ? sidebarActive : "transparent",
+                                    color: activePage === item.id ? sidebarActiveText : textMuted,
+                                    border: "none",
+                                    borderRadius: 8,
+                                    padding: "10px 4px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    alignItems: "center",
+                                    gap: 4,
+                                    fontSize: 10,
+                                    width: "100%",
+                                }}
+                            >
+                                <i className={`ti ${item.icon}`} style={{ fontSize: 20 }} aria-hidden="true"></i>
+                                {item.label}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 {/* Main content */}
-                <div style={{ padding: 24 }}>{pageContent()}</div>
+                <div style={{ padding: isMobile ? 14 : 24, paddingTop: isMobile ? 16 : 24 }}>
+                    {pageContent()}
+                </div>
             </div>
 
             {/* Deposit Modal */}
@@ -1013,7 +1165,7 @@ export default function Dashboard() {
                                 background: surfaceAlt,
                                 borderRadius: 8,
                                 padding: "10px 14px",
-                                fontSize: 13,
+                                fontSize: isMobile ? 12 : 13,
                                 color: textMuted,
                             }}
                         >
@@ -1058,7 +1210,7 @@ export default function Dashboard() {
                         <select
                             value={accountType}
                             onChange={(e) => setAccountType(e.target.value)}
-                            style={inputStyle}
+                            style={{ ...inputStyle, minHeight: isMobile ? 44 : "auto" }}
                         >
                             <option value="SAVINGS">Savings</option>
                             <option value="CHECKING">Checking</option>
